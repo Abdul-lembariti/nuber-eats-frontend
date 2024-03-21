@@ -1,4 +1,6 @@
 import React from 'react'
-export default function CreateAccount() {
-  return <span>Create account</span>
+
+
+export const CreateAccount = () => {
+  return <span>Create Acocunt</span>
 }
