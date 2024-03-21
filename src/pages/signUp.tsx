@@ -53,7 +53,7 @@ export const CreateAccount = () => {
     if (ok) {
       //redirect to login page
       alert('Account Created Successfully! Log In Now')
-      navigate('/login')
+      navigate('/')
     } else {
       console.log(error)
     }

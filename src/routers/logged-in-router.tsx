@@ -1,6 +1,18 @@
 import React from 'react'
-import { isLoggedInVar } from '../apollo'
+// import { isLoggedInVar } from '../apollo'
 import { gql, useQuery } from '@apollo/client'
+import { meQuery } from '../__generated__/meQuery'
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from 'react-router-dom'
+import { Restaurants } from '../pages/client/restaurants'
+import { Header } from '../components/header'
+
+// const ClientRoutes = () => (
+// )
 
 const ME_QUERY = gql`
   query meQuery {
@@ -14,7 +26,7 @@ const ME_QUERY = gql`
 `
 
 export const LoggedIn = () => {
-  const { data, loading, error } = useQuery(ME_QUERY)
+  const { data, loading, error } = useQuery<meQuery>(ME_QUERY)
   if (!data || error || loading) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -24,9 +36,14 @@ export const LoggedIn = () => {
   }
 
   return (
-    <div>
-      <h1>Logged In</h1>
-      <button onClick={() => isLoggedInVar(false)}>Log Out</button>
-    </div>
+    <Router>
+      <Header />
+      <Routes>
+        {data.me.role === 'Client' && (
+          <Route path="/" element={<Restaurants />} />
+        )}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
   )
 }
