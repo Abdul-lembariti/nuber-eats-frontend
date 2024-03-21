@@ -1,7 +1,28 @@
 import React from 'react'
 import { isLoggedInVar } from '../apollo'
+import { gql, useQuery } from '@apollo/client'
+
+const ME_QUERY = gql`
+  query meQuery {
+    me {
+      id
+      email
+      role
+      verified
+    }
+  }
+`
 
 export const LoggedIn = () => {
+  const { data, loading, error } = useQuery(ME_QUERY)
+  if (!data || error || loading) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <span className="font-medium text-xl tracking-wide">Loading..</span>
+      </div>
+    )
+  }
+
   return (
     <div>
       <h1>Logged In</h1>
