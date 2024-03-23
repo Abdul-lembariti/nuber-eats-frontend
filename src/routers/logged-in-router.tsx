@@ -1,6 +1,11 @@
 import React from 'react'
 // import { isLoggedInVar } from '../apollo'
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
+import {
+  Route,
+  BrowserRouter as Router,
+  Routes,
+  useLocation,
+} from 'react-router-dom'
 import { Restaurants } from '../pages/client/restaurants'
 import { Header } from '../components/header'
 import { useMe } from '../hooks/useMe'
@@ -21,9 +26,14 @@ export const LoggedIn = () => {
     )
   }
 
+  const HeaderRoute = () => {
+    const location = useLocation()
+    return location.pathname !== '/' ? <Header /> : null
+  }
+
   return (
     <Router>
-      <Header />
+      <HeaderRoute />
       <Routes>
         {data.me.role === 'Client' && (
           <>
