@@ -15,11 +15,14 @@
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "autoprefixer": "^10.4.18",
+    "cypress": "^13.7.1",
     "graphql": "^16.8.1",
+    "mock-apollo-client": "^1.2.1",
     "postcss": "^8.4.36",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
+    "react-helmet-async": "^2.0.4",
     "react-hook-form": "^7.51.1",
     "react-router-dom": "^6.22.3",
     "react-scripts": "5.0.1",
@@ -33,7 +36,8 @@
     "start": "npm run apollo:codegen & npm run tailwind-build & react-scripts start",
     "build": "react-scripts build",
     "apollo:codegen": "rimraf src/__generated__ && apollo client:codegen src/__generated__ --target=typescript --outputFlat",
-    "test": "react-scripts test",
+    "test": "react-scripts test --verbose",
+    "test:cov": "npm test -- --coverage --watchAll=false",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -53,5 +57,15 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "./src/components/**/*.tsx",
+      "./src/pages/**/*.tsx",
+      "./src/routers/**/*.tsx"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/cypress": "^10.0.1"
   }
 }

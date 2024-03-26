@@ -1,6 +1,6 @@
 import React from 'react'
 interface IBtn {
-  canClick: Boolean
+  canClick: Boolean 
   loading: Boolean
   actionState: String
 }

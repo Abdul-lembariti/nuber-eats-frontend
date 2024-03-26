@@ -13,6 +13,11 @@ export enum UserRole {
   Owner = "Owner",
 }
 
+export interface CategoryInput {
+  page: number;
+  slug: string;
+}
+
 export interface CreateAccountInput {
   email: string;
   password: string;
@@ -29,8 +34,17 @@ export interface LoginInput {
   password: string;
 }
 
+export interface RestaurantInput {
+  restaurantId: number;
+}
+
 export interface RestaurantsInput {
   page: number;
+}
+
+export interface SearchRestaurantInput {
+  page: number;
+  query: string;
 }
 
 export interface VerifyEmailInPut {

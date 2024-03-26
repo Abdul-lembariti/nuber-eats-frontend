@@ -12,6 +12,9 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { Restaurant } from '../../components/restaurant'
 import { Layout } from '../../components/layout'
+import { useForm } from 'react-hook-form'
+import { Link, useNavigate } from 'react-router-dom'
+import { CATEGORY_FRAGMENT } from '../../fragments'
 
 const RESTAURANTS_QUERY = gql`
   query restaurantsPageQuery($input: RestaurantsInput!) {
@@ -19,11 +22,7 @@ const RESTAURANTS_QUERY = gql`
       ok
       error
       categories {
-        id
-        name
-        coverImg
-        slug
-        restaurantCount
+        ...CategoryParts
       }
     }
     restaurants(input: $input) {
@@ -43,7 +42,12 @@ const RESTAURANTS_QUERY = gql`
       }
     }
   }
+  ${CATEGORY_FRAGMENT}
 `
+
+interface IForm {
+  searchTerm: string
+}
 
 export const Restaurants = () => {
   const [page, setPage] = useState(1)
@@ -59,13 +63,25 @@ export const Restaurants = () => {
   })
   const onNextPage = () => setPage((current) => current + 1)
   const onPrevPage = () => setPage((current) => current - 1)
-
+  const { register, handleSubmit, getValues } = useForm<IForm>()
+  const navigate = useNavigate()
+  const onSearchSubmit = () => {
+    const { searchTerm } = getValues()
+    navigate({
+      pathname: '/search',
+      search: `?term=${searchTerm}`,
+    })
+  }
   return (
     <Layout>
       <div>
-        <form className="bg-gray-800 w-full py-36 flex items-center justify-center">
+        <form
+          onSubmit={handleSubmit(onSearchSubmit)}
+          className="bg-gray-800 w-full py-36 flex items-center justify-center">
           <div className="relative sm:w-1/2 lg:w-3/12">
             <input
+              {...register('searchTerm', { required: true, min: 3 })}
+              name="searchTerm"
               type="search"
               className="input w-full rounded-lg pl-10 "
               placeholder="Search Restaurant"
@@ -79,20 +95,25 @@ export const Restaurants = () => {
           <div className="max-w-screen-xl mx-auto mt-8 pb-20 ">
             <div className="flex justify-around max-w-xl mx-auto mb-7">
               {data?.allCategories.categories?.map((category) => (
-                <div className="flex flex-col items-center cursor-pointer">
+                <Link to={`/category/${category.slug}`}>
                   <div
-                    className="w-14 h-14 bg-cover rounded-full transform hover:scale-110 transition-transform duration-300"
-                    style={{
-                      backgroundImage: `url(${category.coverImg})`,
-                    }}></div>
-                  <span className="text-sm font-bold">{category.name}</span>
-                </div>
+                    key={category.id}
+                    className="flex flex-col items-center cursor-pointer">
+                    <div
+                      className="w-14 h-14 bg-cover rounded-full transform hover:scale-110 transition-transform duration-300"
+                      style={{
+                        backgroundImage: `url(${category.coverImg})`,
+                      }}></div>
+                    <span className="text-sm font-bold">{category.name}</span>
+                  </div>
+                </Link>
               ))}
             </div>
 
             <div className="grid grid-cols-3 gap-x-5 gap-y-10">
               {data?.restaurants.results?.map((restaurant) => (
                 <Restaurant
+                  key={restaurant.id}
                   id={restaurant.id + ''}
                   coverImg={restaurant.coverImg}
                   name={restaurant.name}
@@ -100,7 +121,7 @@ export const Restaurants = () => {
                 />
               ))}
             </div>
-            <div className="grid grid-cols-3 max-w-md mx-auto  text-center items-center mt-10">
+            <div className="grid md:grid-cols-3 max-w-md mx-auto  text-center items-center mt-10">
               {page > 1 ? (
                 <button
                   onClick={onPrevPage}

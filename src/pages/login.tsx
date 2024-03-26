@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom'
 import { authToken, isLoggedInVar } from '../apollo'
 import { LOCALSTORAGE } from '../constants'
 
-const LOGIN_MUTATION = gql`
+export const LOGIN_MUTATION = gql`
   mutation loginMutation($loginInput: LoginInput!) {
     login(input: $loginInput) {
       ok
@@ -128,6 +128,7 @@ export const Login = () => {
           </div>
         </div>
       </div>
+      {/*ddfdfdfdffdfdfdfdffdfdfdfdfdfddddddddddddddddddgdgfgfgdfgdfgdfgdfgdgfgfdfdfgdfdfdfgfgdfgddfgdfdfgdfdfgdfgdfgdfdfdfdfdfdddddddddfdfdfdfdfdfdfdfdfdfdfdf*/}
     </>
   )
 }

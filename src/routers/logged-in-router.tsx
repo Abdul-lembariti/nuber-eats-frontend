@@ -12,6 +12,9 @@ import { useMe } from '../hooks/useMe'
 import { NotFound } from '../pages/404'
 import { ConfirmEmail } from '../pages/user/confirm-email'
 import { EditProfile } from '../pages/user/edit-profile'
+import { Search } from '../pages/client/search'
+import { Category } from '../pages/client/category'
+import { Restaurant } from '../pages/client/restaurant'
 
 // const ClientRoutes = () => (
 // )
@@ -40,6 +43,10 @@ export const LoggedIn = () => {
             <Route path="/" element={<Restaurants />} />
             <Route path="/confirm" element={<ConfirmEmail />} />
             <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/category/:slug" element={<Category />} />
+            <Route path="/restaurant/:id" element={<Restaurant />} />
+
           </>
         )}
         <Route path="*" element={<NotFound />} />
