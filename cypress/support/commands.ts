@@ -46,12 +46,12 @@ Cypress.Commands.add('assertLoggedOut', () => {
   cy.window().its('localStorage.token').should('be.undefined')
 })
 
-Cypress.Commands.add('loggedIn', (email, password) => {
+Cypress.Commands.add('loggedIn', () => {
   cy.visit('/')
 
   cy.assertLoggedOut()
-  cy.findByPlaceholderText(/email/i).type(email)
-  cy.findByPlaceholderText(/password/i).type(password)
+  cy.findByPlaceholderText(/email/i).type('abdullembariti@gmail.com')
+  cy.findByPlaceholderText(/password/i).type('123')
   cy.findByRole('button')
     .should('not.have.class', 'pointer-events-none')
     .click()

@@ -5,4 +5,12 @@
   @apply transition-colors p-5 border-2 text-lg font-light focus:outline-none focus:border-b-green-400 border-gray-200;
 }
 
+.container {
+  @apply max-w-screen-xl mx-auto;
+}
+
+.link {
+  @apply text-primary hover:underline;
+}
+
 @tailwind utilities;

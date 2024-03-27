@@ -11,7 +11,6 @@ import {
   faSearch,
 } from '@fortawesome/free-solid-svg-icons'
 import { Restaurant } from '../../components/restaurant'
-import { Layout } from '../../components/layout'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { CATEGORY_FRAGMENT } from '../../fragments'
@@ -73,7 +72,7 @@ export const Restaurants = () => {
     })
   }
   return (
-    <Layout>
+    <>
       <div>
         <form
           onSubmit={handleSubmit(onSearchSubmit)}
@@ -154,6 +153,6 @@ export const Restaurants = () => {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   )
 }

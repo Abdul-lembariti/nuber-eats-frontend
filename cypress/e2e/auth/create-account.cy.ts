@@ -19,15 +19,7 @@ describe('CreateAccount', () => {
       const { operationName } = req.body
       if (operationName && operationName === 'createAccountMutation') {
         req.reply((res) => {
-          res.send({
-            data: {
-              createAccount: {
-                ok: true,
-                error: null,
-                __typename: 'CreateAccountOutput',
-              },
-            },
-          })
+          fixture: 'auth/create-account.json'
         })
       }
     })
@@ -38,6 +30,6 @@ describe('CreateAccount', () => {
     user.wait(1000)
     user.title().should('eq', 'Nuber')
     //@ts-ignore
-    user.loggedIn('abdullembariti@gmail.com', '123')
+    user.loggedIn()
   })
 })

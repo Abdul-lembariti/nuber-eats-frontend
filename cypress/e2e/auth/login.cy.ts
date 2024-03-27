@@ -18,6 +18,6 @@ describe('Log In', () => {
   })
   it('can fill out the form and login', () => {
     //@ts-ignore
-    user.loggedIn('abdullembariti@gmail.com', '123')
+    user.loggedIn()
   })
 })

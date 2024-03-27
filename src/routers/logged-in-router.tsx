@@ -4,7 +4,6 @@ import {
   Route,
   BrowserRouter as Router,
   Routes,
-  useLocation,
 } from 'react-router-dom'
 import { Restaurants } from '../pages/client/restaurants'
 import { Header } from '../components/header'
@@ -15,9 +14,54 @@ import { EditProfile } from '../pages/user/edit-profile'
 import { Search } from '../pages/client/search'
 import { Category } from '../pages/client/category'
 import { Restaurant } from '../pages/client/restaurant'
+import { MyRestaurants } from '../pages/owner/myRestaurant'
+import { AddRestaurant } from '../pages/owner/addRestaurant'
+import { MyRestaurant } from '../pages/owner/my-restaurant'
 
-// const ClientRoutes = () => (
-// )
+const ClientRoutes = [
+  {
+    path: '/',
+    component: <Restaurants />,
+  },
+  {
+    path: '/search',
+    component: <Search />,
+  },
+  {
+    path: '/category/:slug',
+    component: <Category />,
+  },
+  {
+    path: '/restaurant/:id',
+    component: <Restaurant />,
+  },
+]
+
+const commonRoutes = [
+  {
+    path: '/edit-profile',
+    component: <EditProfile />,
+  },
+  {
+    path: '/confirm',
+    component: <ConfirmEmail />,
+  },
+]
+
+const restaurantRoutes = [
+  {
+    path: '/',
+    component: <MyRestaurants />,
+  },
+  {
+    path: '/add-restaurant',
+    component: <AddRestaurant />,
+  },
+  {
+    path: '/restaurant/:id',
+    component: <MyRestaurant />,
+  },
+]
 
 export const LoggedIn = () => {
   const { data, loading, error } = useMe()
@@ -29,26 +73,36 @@ export const LoggedIn = () => {
     )
   }
 
-  const HeaderRoute = () => {
+ /*  const HeaderRoute = () => {
     const location = useLocation()
     return location.pathname !== '/' ? <Header /> : null
-  }
+  } */
 
   return (
     <Router>
-      <HeaderRoute />
+      <Header />
       <Routes>
-        {data.me.role === 'Client' && (
-          <>
-            <Route path="/" element={<Restaurants />} />
-            <Route path="/confirm" element={<ConfirmEmail />} />
-            <Route path="/edit-profile" element={<EditProfile />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/category/:slug" element={<Category />} />
-            <Route path="/restaurant/:id" element={<Restaurant />} />
+        {data.me.role === 'Client' &&
+          ClientRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={route.component}
+            />
+          ))}
 
-          </>
-        )}
+        {data.me.role === 'Owner' &&
+          restaurantRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={route.component}
+            />
+          ))}
+
+        {commonRoutes.map((route) => (
+          <Route key={route.path} path={route.path} element={route.component} />
+        ))}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
