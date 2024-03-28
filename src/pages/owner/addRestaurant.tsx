@@ -96,6 +96,7 @@ export const AddRestaurant = () => {
         })
       ).json()
       setImage(coverImg)
+      
       createRestaurantMutation({
         variables: {
           input: {

@@ -1,10 +1,6 @@
 import React from 'react'
 // import { isLoggedInVar } from '../apollo'
-import {
-  Route,
-  BrowserRouter as Router,
-  Routes,
-} from 'react-router-dom'
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { Restaurants } from '../pages/client/restaurants'
 import { Header } from '../components/header'
 import { useMe } from '../hooks/useMe'
@@ -17,6 +13,7 @@ import { Restaurant } from '../pages/client/restaurant'
 import { MyRestaurants } from '../pages/owner/myRestaurant'
 import { AddRestaurant } from '../pages/owner/addRestaurant'
 import { MyRestaurant } from '../pages/owner/my-restaurant'
+import { AddDish } from '../pages/owner/addDish'
 
 const ClientRoutes = [
   {
@@ -61,6 +58,10 @@ const restaurantRoutes = [
     path: '/restaurant/:id',
     component: <MyRestaurant />,
   },
+  {
+    path: '/restaurant/:restaurantId/add-dish',
+    component: <AddDish />,
+  },
 ]
 
 export const LoggedIn = () => {
@@ -73,7 +74,7 @@ export const LoggedIn = () => {
     )
   }
 
- /*  const HeaderRoute = () => {
+  /*  const HeaderRoute = () => {
     const location = useLocation()
     return location.pathname !== '/' ? <Header /> : null
   } */
