@@ -1,13 +1,31 @@
-import { gql, useQuery } from '@apollo/client'
-import React from 'react'
+import { gql, useMutation, useQuery } from '@apollo/client'
+import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { DISH_FRAGMENT, RESTAURANT_FRAGMENT } from '../../fragments'
+import {
+  DISH_FRAGMENT,
+  ORDER_FRAGMENT,
+  RESTAURANT_FRAGMENT,
+} from '../../fragments'
 import {
   myRestaurant,
   myRestaurantVariables,
 } from '../../__generated__/myRestaurant'
 import { Dish } from '../../components/dish'
-import { VictoryAxis, VictoryBar, VictoryChart } from 'victory'
+import {
+  VictoryAxis,
+  VictoryLine,
+  VictoryTheme,
+  VictoryTooltip,
+  VictoryVoronoiContainer,
+  VictoryChart,
+  VictoryLabel,
+} from 'victory'
+import { initializePaddle, Paddle } from '@paddle/paddle-js'
+import { useMe } from '../../hooks/useMe'
+import {
+  createPayment,
+  createPaymentVariables,
+} from '../../__generated__/createPayment'
 
 type IParams = {
   id: string
@@ -23,14 +41,28 @@ export const MY_RESTAURANt = gql`
         menu {
           ...DishParts
         }
+        orders {
+          ...OrderParts
+        }
       }
     }
   }
   ${RESTAURANT_FRAGMENT}
   ${DISH_FRAGMENT}
+  ${ORDER_FRAGMENT}
+`
+
+const CREATE_PAYMENT = gql`
+  mutation createPayment($input: CreatePaymentInput!) {
+    createPayment(input: $input) {
+      ok
+      error
+    }
+  }
 `
 
 export const MyRestaurant = () => {
+  const [paddle, setPaddle] = useState<Paddle>()
   const { id } = useParams<IParams>()
   const restaurantId = id ? +id : undefined
   const { data } = useQuery<myRestaurant, myRestaurantVariables>(
@@ -44,26 +76,57 @@ export const MyRestaurant = () => {
     }
   )
   console.log(data)
+  const onCompleted = (data: createPayment) => {
+    if (data.createPayment.ok) {
+      alert('Your restaurant has been promted')
+    }
+  }
 
+  const [createPayment, { loading }] = useMutation<
+    createPayment,
+    createPaymentVariables
+  >(CREATE_PAYMENT, {
+    onCompleted,
+  })
 
-  const chartData = [
-    { x: 1, y: 3000 },
-    { x: 2, y: 1500 },
-    { x: 3, y: 4250 },
-    { x: 4, y: 1250 },
-    { x: 5, y: 2300 },
-    { x: 6, y: 7150 },
-    { x: 7, y: 6830 },
-    { x: 8, y: 6830 },
-    { x: 9, y: 6830 },
-    { x: 10, y: 6830 },
-    { x: 11, y: 6830 },
-  ];
+  useEffect(() => {
+    initializePaddle({
+      environment: 'sandbox',
+      token: 'test_7d3ecdbd9d91986cea0cd5a9ab1',
+    }).then((paddleInstance: Paddle | undefined) => {
+      if (paddleInstance) {
+        setPaddle(paddleInstance)
+      }
+    })
+  }, [])
 
-
+  const { data: userData } = useMe()
+  //@ts-ignore
+  const triggerPaddle = () => {
+    if (paddle) {
+      const checkoutData = paddle?.Checkout.open({
+        items: [{ priceId: 'pri_01ht4pje32da7g6mnpp39c56yw', quantity: 1 }],
+        customer: { email: userData?.me.email ?? '' },
+      })
+      console.log(checkoutData)
+      createPayment({
+        variables: {
+          input: {
+            transactionId: '12',
+            restaurantId: restaurantId ?? 0,
+          },
+        },
+      })
+    } else {
+      console.error('Paddle is not initialized yet.')
+    }
+  }
 
   return (
     <div>
+      <head>
+        <title>My-Restaurant</title>
+      </head>
       <div
         className="bg-gray-700 py-28 bg-center bg-cover"
         style={{
@@ -78,16 +141,19 @@ export const MyRestaurant = () => {
           className="mr-8 text-white bg-gray-800 py-3 px-10 rounded-md">
           Add Dish &rarr;
         </Link>
-        <Link to={``} className="text-white bg-primary py-3 px-3 rounded-md">
+        <span
+          onClick={triggerPaddle}
+          className="cursor-pointer text-white bg-primary py-3 px-3 rounded-md">
           Buy Promotion &rarr;
-        </Link>
+        </span>
         <div className="mt-10">
           {data?.myRestaurant.restaurant?.menu.length === 0 ? (
             <h4 className="font-bold">Please Upload a Dish</h4>
           ) : (
             <div className="grid mt-16 md:grid-cols-3 gap-x-5 gap-y-10">
-              {data?.myRestaurant.restaurant?.menu.map((dish) => (
+              {data?.myRestaurant.restaurant?.menu.map((dish, index) => (
                 <Dish
+                  key={index}
                   name={dish.name}
                   desciption={dish.description}
                   price={dish.price}
@@ -100,21 +166,41 @@ export const MyRestaurant = () => {
 
         <div className="mt-20 mb-10">
           <h4 className="text-center text-2xl font-medium">Sales</h4>
-          <div className="max-w-lg w-full mx-auto">
-            <VictoryChart domainPadding={20}>
-              <VictoryAxis
-                label="Amount of sales"
-                dependentAxis
-                tickValues={[20, 30, 40, 50, 60]}
+          <div className=" mt-10">
+            <VictoryChart
+              height={500}
+              theme={VictoryTheme.material}
+              width={window.innerWidth}
+              domainPadding={50}
+              containerComponent={<VictoryVoronoiContainer />}>
+              <VictoryLine
+                labels={({ datum }) => `$${datum.y}`}
+                labelComponent={
+                  <VictoryTooltip
+                    style={{ fontSize: 18 }}
+                    renderInPortal
+                    dy={-20}
+                  />
+                }
+                data={data?.myRestaurant.restaurant?.orders.map((order) => ({
+                  x: order.createdAt,
+                  y: order.total,
+                }))}
+                style={{
+                  data: {
+                    strokeWidth: 5,
+                  },
+                }}
               />
-              <VictoryAxis label="Days of sales" />
-              <VictoryBar
-                data={[
-                  { x: 10, y: 20 },
-                  { x: 20, y: 10 },
-                  { x: 30, y: 55 },
-                  { x: 40, y: 99 },
-                ]}
+              <VictoryAxis
+                tickLabelComponent={<VictoryLabel renderInPortal />}
+                style={{
+                  tickLabels: {
+                    fontSize: 18,
+                    angle: 45,
+                  },
+                }}
+                tickFormat={(tick) => new Date(tick).toLocaleDateString('tz')}
               />
             </VictoryChart>
           </div>
