@@ -14,6 +14,10 @@ import { MyRestaurants } from '../pages/owner/myRestaurant'
 import { AddRestaurant } from '../pages/owner/addRestaurant'
 import { MyRestaurant } from '../pages/owner/my-restaurant'
 import { AddDish } from '../pages/owner/addDish'
+import { Order } from '../pages/order'
+import path from 'path'
+import { Dashboard } from '../pages/driver/dashboard'
+import { UserRole } from '../__generated__/globalTypes'
 
 const ClientRoutes = [
   {
@@ -43,6 +47,10 @@ const commonRoutes = [
     path: '/confirm',
     component: <ConfirmEmail />,
   },
+  {
+    path: '/order/:id',
+    component: <Order />,
+  },
 ]
 
 const restaurantRoutes = [
@@ -61,6 +69,13 @@ const restaurantRoutes = [
   {
     path: '/restaurant/:restaurantId/add-dish',
     component: <AddDish />,
+  },
+]
+
+const driverRoutes = [
+  {
+    path: '/',
+    component: <Dashboard />,
   },
 ]
 
@@ -83,7 +98,7 @@ export const LoggedIn = () => {
     <Router>
       <Header />
       <Routes>
-        {data.me.role === 'Client' &&
+        {data.me.role === UserRole.Client &&
           ClientRoutes.map((route) => (
             <Route
               key={route.path}
@@ -92,8 +107,17 @@ export const LoggedIn = () => {
             />
           ))}
 
-        {data.me.role === 'Owner' &&
+        {data.me.role === UserRole.Owner &&
           restaurantRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={route.component}
+            />
+          ))}
+
+        {data.me.role === UserRole.Delivery &&
+          driverRoutes.map((route) => (
             <Route
               key={route.path}
               path={route.path}

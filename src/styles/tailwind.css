@@ -13,4 +13,7 @@
   @apply text-primary hover:underline;
 }
 
+.btn {
+  @apply mt-3 text-lg focus:outline-none font-medium rounded-lg text-white py-5  transition-colors bg-primary hover:bg-lime-600;
+}
 @tailwind utilities;

@@ -1,8 +1,9 @@
-import { gql, useMutation, useQuery } from '@apollo/client'
+import { gql, useMutation, useQuery, useSubscription } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   DISH_FRAGMENT,
+  FULL_ORDER_FRAGMENT,
   ORDER_FRAGMENT,
   RESTAURANT_FRAGMENT,
 } from '../../fragments'
@@ -20,12 +21,13 @@ import {
   VictoryChart,
   VictoryLabel,
 } from 'victory'
-import { initializePaddle, Paddle } from '@paddle/paddle-js'
+import { initializePaddle, Paddle, PaddleEventData } from '@paddle/paddle-js'
 import { useMe } from '../../hooks/useMe'
 import {
   createPayment,
   createPaymentVariables,
 } from '../../__generated__/createPayment'
+import { pendingOrders } from '../../__generated__/pendingOrders'
 
 type IParams = {
   id: string
@@ -61,6 +63,15 @@ const CREATE_PAYMENT = gql`
   }
 `
 
+const PENDING_ORDER = gql`
+  subscription pendingOrders {
+    pendingOrders {
+      ...FullOrderParts
+    }
+  }
+  ${FULL_ORDER_FRAGMENT}
+`
+
 export const MyRestaurant = () => {
   const [paddle, setPaddle] = useState<Paddle>()
   const { id } = useParams<IParams>()
@@ -75,24 +86,35 @@ export const MyRestaurant = () => {
       },
     }
   )
-  console.log(data)
-  const onCompleted = (data: createPayment) => {
-    if (data.createPayment.ok) {
-      alert('Your restaurant has been promted')
-    }
-  }
 
   const [createPayment, { loading }] = useMutation<
     createPayment,
     createPaymentVariables
-  >(CREATE_PAYMENT, {
-    onCompleted,
-  })
+  >(CREATE_PAYMENT)
 
   useEffect(() => {
     initializePaddle({
       environment: 'sandbox',
       token: 'test_7d3ecdbd9d91986cea0cd5a9ab1',
+      eventCallback: function (data: PaddleEventData) {
+        const transactionId = data?.data?.transaction_id
+        if (transactionId) {
+          createPayment({
+            variables: {
+              input: {
+                transactionId: transactionId,
+                restaurantId: restaurantId ?? 0,
+              },
+            },
+          }).then((result) => {
+            if (result.data?.createPayment.ok) {
+              alert('Your about to be promoted')
+            } else {
+              console.error('Payment failed:', result.data?.createPayment.error)
+            }
+          })
+        }
+      },
     }).then((paddleInstance: Paddle | undefined) => {
       if (paddleInstance) {
         setPaddle(paddleInstance)
@@ -104,23 +126,24 @@ export const MyRestaurant = () => {
   //@ts-ignore
   const triggerPaddle = () => {
     if (paddle) {
-      const checkoutData = paddle?.Checkout.open({
+      paddle?.Checkout.open({
         items: [{ priceId: 'pri_01ht4pje32da7g6mnpp39c56yw', quantity: 1 }],
         customer: { email: userData?.me.email ?? '' },
-      })
-      console.log(checkoutData)
-      createPayment({
-        variables: {
-          input: {
-            transactionId: '12',
-            restaurantId: restaurantId ?? 0,
-          },
-        },
       })
     } else {
       console.error('Paddle is not initialized yet.')
     }
   }
+
+  const { data: subData } = useSubscription<pendingOrders>(PENDING_ORDER)
+  const navigate = useNavigate()
+  console.log(subData)
+  //cant redirect the user due to subscriptions
+  useEffect(() => {
+    if (subData && subData.pendingOrders && subData.pendingOrders.id) {
+      navigate(`/order/${subData.pendingOrders.id}`)
+    }
+  }, [subData, navigate])
 
   return (
     <div>
@@ -200,6 +223,7 @@ export const MyRestaurant = () => {
                     angle: 45,
                   },
                 }}
+                //@ts-ignore
                 tickFormat={(tick) => new Date(tick).toLocaleDateString('tz')}
               />
             </VictoryChart>
