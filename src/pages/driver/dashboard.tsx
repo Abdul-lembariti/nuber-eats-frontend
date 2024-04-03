@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from 'react'
 import GoogleMapReact from 'google-map-react'
 import { gql, useMutation, useSubscription } from '@apollo/client'
@@ -75,6 +77,7 @@ export const Dashboard = () => {
         }
       ) */
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [driverCoords.lat, driverCoords.lng])
   const onApiLoaded = ({ map, maps }: { map: any; maps: any }) => {
     map.panTo(new google.maps.LatLng(driverCoords.lat, driverCoords.lng))
