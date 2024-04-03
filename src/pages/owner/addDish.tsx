@@ -62,10 +62,13 @@ export const AddDish = () => {
     if (actualFile) {
       const formBody = new FormData()
       formBody.append('file', actualFile)
-      const response = await fetch('http://localhost:4000/uploads', {
-        method: 'POST',
-        body: formBody,
-      })
+      const response = await fetch(
+        'https://nuber-eats-backendd.onrender.com/uploads',
+        {
+          method: 'POST',
+          body: formBody,
+        }
+      )
       const { url } = await response.json()
       photo = url
       setImage(url)

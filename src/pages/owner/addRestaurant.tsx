@@ -90,7 +90,7 @@ export const AddRestaurant = () => {
 
       formBody.append('file', actualFile)
       const { url: coverImg } = await (
-        await fetch('http://localhost:4000/uploads', {
+        await fetch('https://nuber-eats-backendd.onrender.com/uploads', {
           method: 'POST',
           body: formBody,
         })
