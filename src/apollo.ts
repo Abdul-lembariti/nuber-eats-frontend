@@ -20,10 +20,8 @@ export const authToken = makeVar(token)
 
 const wsLink = new GraphQLWsLink(
   createClient({
-    url:
-      process.env.NODE_ENV === 'production'
-        ? 'wss://nuber-eats-backendd.onrender.com/graphql'
-        : `ws://localhost:4000/graphql`,
+    url: 'wss://nuber-eats-backendd.onrender.com/graphql',
+
     connectionParams: {
       'x-jwt': authToken() || '',
     },
@@ -31,10 +29,7 @@ const wsLink = new GraphQLWsLink(
 )
 
 const httpLink = createHttpLink({
-  uri:
-    process.env.NODE_ENV === 'production'
-      ? 'https://nuber-eats-backendd.onrender.com/graphql'
-      : 'http://localhost:4000/graphql',
+  uri: 'https://nuber-eats-backendd.onrender.com/graphql',
 })
 
 const authLink = setContext((_, { headers }) => {
