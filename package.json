@@ -17,6 +17,7 @@
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "autoprefixer": "^10.4.18",
+    "cross-env": "^7.0.3",
     "cypress": "^13.7.1",
     "google-map-react": "^2.2.1",
     "graphql": "^16.8.1",
@@ -39,7 +40,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "tailwind-build": "tailwind build ./src/styles/tailwind.css -o ./src/styles/styles.css",
+    "tailwind-build": "cross-env NODE_ENV=production tailwind build ./src/styles/tailwind.css -o ./src/styles/styles.css",
     "start": "npm run apollo:codegen & npm run tailwind-build & react-scripts start",
     "build": "CI=false react-scripts build",
     "prebuild": "npm run tailwind-build",
