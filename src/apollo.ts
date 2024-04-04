@@ -21,8 +21,8 @@ export const authToken = makeVar(token)
 const wsLink = new GraphQLWsLink(
   createClient({
     url:
-      // 'wss://nuber-eats-backendd.onrender.com/graphql' ||
-      'ws://localhost:4000/graphql',
+      'wss://nuber-eats-backendd.onrender.com/graphql',
+      // 'ws://localhost:4000/graphql',
 
     connectionParams: {
       'x-jwt': authToken() || '',
@@ -32,8 +32,8 @@ const wsLink = new GraphQLWsLink(
 
 const httpLink = createHttpLink({
   uri:
-    // 'https://nuber-eats-backendd.onrender.com/graphql' ||
-    'http://localhost:4000/graphql',
+    'https://nuber-eats-backendd.onrender.com/graphql',
+    // 'http://localhost:4000/graphql',
 })
 
 const authLink = setContext((_, { headers }) => {
