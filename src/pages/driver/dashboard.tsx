@@ -2,15 +2,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from 'react'
 import GoogleMapReact from 'google-map-react'
-import { gql, useMutation, useSubscription } from '@apollo/client'
+import { gql, useMutation, useQuery, useSubscription } from '@apollo/client'
 import { FULL_ORDER_FRAGMENT } from '../../fragments'
-import {  useNavigate } from 'react-router-dom'
-import { coockedOrder } from '../../__generated__/coockedOrder'
+import { useNavigate } from 'react-router-dom'
 import { takeOrder, takeOrderVariables } from '../../__generated__/takeOrder'
 
+import axios from 'axios'
+import {
+  cookedOrders,
+  cookedOrders_cookedOrders,
+} from '../../__generated__/cookedOrders'
+
 const COOKED_ORDER = gql`
-  subscription coockedOrder {
-    coockedOrder {
+  query cookedOrders {
+    cookedOrders {
       ...FullOrderParts
     }
   }
@@ -39,13 +44,13 @@ interface IDriver {
   $hover?: any
 }
 
-/* const Driver: React.FC<IDriver> = ({ position }) => (
+const Driver: React.FC<IDriver> = ({ position }) => (
   <div
     className="text-lg"
     style={{ position: 'absolute', top: position.lat, left: position.lng }}>
     🚗
   </div>
-) */
+)
 
 export const Dashboard = () => {
   const [driverCoords, setDriverCoords] = useState<ICoords>({ lng: 0, lat: 0 })
@@ -67,8 +72,8 @@ export const Dashboard = () => {
   useEffect(() => {
     if (map && maps) {
       map.panTo(new google.maps.LatLng(driverCoords.lat, driverCoords.lng))
-      /*   const goecoder = new google.maps.Geocoder()
-      goecoder.geocode(
+      // const goecoder = new google.maps.Geocoder()
+      /*  goecoder.geocode(
         {
           location: new google.maps.LatLng(driverCoords.lat, driverCoords.lng),
         },
@@ -77,7 +82,7 @@ export const Dashboard = () => {
         }
       ) */
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [driverCoords.lat, driverCoords.lng])
   const onApiLoaded = ({ map, maps }: { map: any; maps: any }) => {
     map.panTo(new google.maps.LatLng(driverCoords.lat, driverCoords.lng))
@@ -113,25 +118,20 @@ export const Dashboard = () => {
     }
   }
 
-  const { data: cookedOrderData } = useSubscription<coockedOrder>(COOKED_ORDER)
+  const { data: cookedOrderData } = useQuery<cookedOrders>(COOKED_ORDER)
 
   useEffect(() => {
-    if (cookedOrderData?.coockedOrder.id) {
+    if (cookedOrderData?.cookedOrders.length) {
       makeRoute()
     }
   }, [cookedOrderData])
 
-  const naviagate = useNavigate()
-  const onCompleted = (data: takeOrder) => {
-    if (data.takeOrder.ok) {
-      naviagate(`/orders/${cookedOrderData?.coockedOrder.id}`)
-    }
-  }
+  const navigate = useNavigate()
 
   const [takeOrderMutation] = useMutation<takeOrder, takeOrderVariables>(
-    TAKE_ORDER,
-    { onCompleted }
+    TAKE_ORDER
   )
+
   const triggerMutation = (orderId: number) => {
     takeOrderMutation({
       variables: {
@@ -139,8 +139,28 @@ export const Dashboard = () => {
           id: orderId,
         },
       },
+      onCompleted: (data: takeOrder) => {
+        if (data.takeOrder.ok) {
+          navigate(`/order/${orderId}`)
+        }
+      },
     })
   }
+
+  const [apiKey, setApiKey] = useState<string>('')
+  useEffect(() => {
+    const fetchGoogleMapsApiKey = async () => {
+      try {
+        const response = await axios.get('/api/google-maps/api-key')
+        const apiKey = response.data
+        setApiKey(apiKey)
+      } catch (error) {
+        console.error('Error fetching Google Maps API key:', error)
+      }
+    }
+
+    fetchGoogleMapsApiKey()
+  }, [])
 
   return (
     <div>
@@ -153,30 +173,34 @@ export const Dashboard = () => {
           defaultZoom={15}
           draggable={true}
           defaultCenter={{
-            lat: -3.37,
-            lng: 36.6,
+            lat: driverCoords.lat,
+            lng: driverCoords.lng,
           }}
           bootstrapURLKeys={{
-            key: 'key',
-          }}></GoogleMapReact>
+            key: apiKey,
+          }}>
+          <Driver position={driverCoords} />
+        </GoogleMapReact>
       </div>
       <div className="max-w-screen-sm mx-auto bg-white relative -top-10 shadow-lg py-8 px-5">
-        {cookedOrderData ? (
-          <>
-            <h1 className="text-center text-3xl font-medium">
-              New Cooked Order
-            </h1>
-            <h4 className="text-center text-2xl my-3 font-medium">
-              Pick it up Soon! @{' '}
-              {cookedOrderData?.coockedOrder.restaurant?.name}
-            </h4>
-            <button
-              onClick={() => triggerMutation(cookedOrderData.coockedOrder.id)}
-              className="btn w-full block text-center mt-5">
-              Accept Order &rarr;
-            </button>
-          </>
-        ) : (
+        {cookedOrderData?.cookedOrders.map(
+          (order: cookedOrders_cookedOrders) => (
+            <React.Fragment key={order.id}>
+              <h1 className="text-center text-3xl font-medium">
+                New Cooked Order
+              </h1>
+              <h4 className="text-center text-2xl my-3 font-medium">
+                Pick it up Soon! @ {order.restaurant?.name}
+              </h4>
+              <button
+                onClick={() => triggerMutation(order.id)}
+                className="btn w-full block text-center mt-5">
+                Accept Order &rarr;
+              </button>
+            </React.Fragment>
+          )
+        )}
+        {cookedOrderData?.cookedOrders.length === 0 && (
           <h1 className="text-center text-3xl font-medium">No orders yet...</h1>
         )}
       </div>
